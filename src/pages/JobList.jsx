@@ -113,52 +113,82 @@ function JobList() {
     }
 
     return (
-        <div className="space-y-8">
-
-            <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-8 relative border border-gray-100">
-                <div className="flex flex-col md:flex-row gap-6 justify-between">
-                    <div className="relative flex-1 max-w-md group">
-                        <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors" />
+        <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
+            <div className="bg-white/80 backdrop-blur-xl rounded-xl sm:rounded-[2rem] p-4 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6 sm:space-y-8 relative border border-gray-100">
+                {/* Search and Filter Section */}
+                <div className="flex flex-col gap-4 sm:gap-6">
+                    <div className="relative flex-1 w-full">
+                        <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
                             placeholder="Search companies or roles..."
-                            className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-gray-50/80"
+                            className="w-full pl-12 pr-4 py-3 sm:py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex gap-4">
-                        <div className="relative group">
-                            <FiFilter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                            <select
-                                className="pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-gray-50/80 appearance-none min-w-[160px]"
-                                value={filter}
-                                onChange={(e) => setFilter(e.target.value)}
-                            >
-                                <option value="all">All Status</option>
-                                <option value="Applied">Applied</option>
-                                <option value="Interview">Interview</option>
-                                <option value="Offer">Offer</option>
-                                <option value="Rejected">Rejected</option>
-                            </select>
-                        </div>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <select
+                            className="pl-10 pr-4 py-3 sm:py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value)}
+                        >
+                            <option value="all">All Status</option>
+                            <option value="Applied">Applied</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Offer">Offer</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
 
-                        <div className="relative group">
-                            <FiList className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                            <select
-                                className="pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-gray-50/80 appearance-none min-w-[160px]"
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
-                            >
-                                <option value="date">Sort by Date</option>
-                                <option value="company">Sort by Company</option>
-                                <option value="status">Sort by Status</option>
-                            </select>
-                        </div>
+                        <select
+                            className="pl-10 pr-4 py-3 sm:py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                        >
+                            <option value="date">Sort by Date</option>
+                            <option value="company">Sort by Company</option>
+                            <option value="status">Sort by Status</option>
+                        </select>
                     </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-2xl border border-gray-100">
+                {/* Mobile Job Cards */}
+                <div className="block sm:hidden space-y-4">
+                    {filteredJobs.map(job => (
+                        <div key={job._id} className="bg-gray-50/50 rounded-xl p-4 space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center font-semibold text-blue-600 text-lg border border-blue-200">
+                                    {job.company.charAt(0)}
+                                </div>
+                                <div>
+                                    <div className="font-medium text-gray-900">{job.company}</div>
+                                    <div className="text-sm text-gray-600">{job.role}</div>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className={`px-3 py-1 rounded-lg text-xs font-medium ${
+                                    job.status === 'Interview' ? 'bg-yellow-100 text-yellow-700' :
+                                    job.status === 'Offer' ? 'bg-green-100 text-green-700' :
+                                    job.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                                    'bg-blue-100 text-blue-700'
+                                }`}>
+                                    {job.status}
+                                </span>
+                                <div className="flex gap-2">
+                                    <button onClick={() => handleEdit(job)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                                        <FiEdit2 className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => handleDelete(job._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+                                        <FiTrash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Desktop Table */}
+                <div className="hidden sm:block overflow-x-auto rounded-xl border border-gray-100">
                     <table className="w-full">
                         <thead>
                             <tr className="bg-gray-50/50">
