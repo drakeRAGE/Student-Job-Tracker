@@ -2,6 +2,10 @@
 
 A simple web app to help students track job applications.
 
+![image](https://github.com/user-attachments/assets/a5e843e4-c8a7-4fa8-a7a8-1239e0f06d86)
+
+![image](https://github.com/user-attachments/assets/29cad607-33f2-4314-a7ca-c44282705df0)
+
 ## Tech Stack
 - **Frontend**: React (Hooks)
 - **Backend**: Node.js, Express.js
