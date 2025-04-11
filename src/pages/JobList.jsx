@@ -1,36 +1,105 @@
-import React, { useState } from 'react';
-import { FiSearch, FiEdit2, FiTrash2, FiExternalLink, FiFilter, FiList } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { FiSearch, FiEdit2, FiTrash2, FiExternalLink, FiFilter, FiList, FiAlertCircle } from 'react-icons/fi';
+import axios from 'axios';
+import EditJobModal from '../components/EditJobModal';
 
 function JobList() {
+    const [selectedJob, setSelectedJob] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [filter, setFilter] = useState('all');
     const [sortBy, setSortBy] = useState('date');
     const [searchTerm, setSearchTerm] = useState('');
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Dummy data , I will add database soon
-    const jobs = [
-        {
-            id: 1,
-            company: 'Google',
-            role: 'Software Engineer',
-            status: 'Interview',
-            appliedDate: '2024-01-15',
-            link: 'https://google.com/careers'
-        },
-        // Add more dummy data as needed
-    ];
+    const apiUrl = 'http://localhost:5000';
 
+    // Fetch jobs from API
+    useEffect(() => {
+        fetchJobs();
+    }, []);
+
+    const fetchJobs = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(`${apiUrl}/jobs`);
+            setJobs(response.data);
+            setError(null);
+        } catch (err) {
+            setError('Failed to fetch jobs. Please try again later.');
+            console.error('Error fetching jobs:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Add these functions
+    const handleEdit = (job) => {
+        setSelectedJob(job);
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdate = async (updatedData) => {
+        try {
+            const response = await axios.put(`${apiUrl}/jobs/${selectedJob._id}`, updatedData);
+            setJobs(jobs.map(job =>
+                job._id === selectedJob._id ? response.data : job
+            ));
+            setIsEditModalOpen(false);
+            setSelectedJob(null);
+        } catch (err) {
+            console.error('Error updating job:', err);
+            alert('Failed to update job. Please try again.');
+        }
+    };
+
+    // Update the delete handler with a custom confirmation dialog
+    const handleDelete = async (id) => {
+        const job = jobs.find(j => j._id === id);
+        if (!job) return;
+
+        const confirmDelete = window.confirm(
+            `Are you sure you want to delete the following job application?\n\nCompany: ${job.company}\nRole: ${job.role}`
+        );
+
+        if (confirmDelete) {
+            try {
+                await axios.delete(`${apiUrl}/jobs/${id}`);
+                setJobs(jobs.filter(job => job._id !== id));
+            } catch (err) {
+                console.error('Error deleting job:', err);
+                alert('Failed to delete job. Please try again.');
+            }
+        }
+    };
+
+    const filteredJobs = jobs
+        .filter(job => {
+            if (filter === 'all') return true;
+            return job.status === filter;
+        })
+        .filter(job => {
+            const searchLower = searchTerm.toLowerCase();
+            return job.company.toLowerCase().includes(searchLower) ||
+                job.role.toLowerCase().includes(searchLower);
+        })
+        .sort((a, b) => {
+            switch (sortBy) {
+                case 'date':
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                case 'company':
+                    return a.company.localeCompare(b.company);
+                case 'status':
+                    return a.status.localeCompare(b.status);
+                default:
+                    return 0;
+            }
+        });
+
+    // Update the button click handlers in the table
     return (
         <div className="space-y-8">
-            <div className="bg-gradient-to-r from-indigo-600 via-blue-700 to-purple-700 rounded-[2rem] p-12 text-white relative overflow-hidden backdrop-blur-3xl">
-                <div className="absolute inset-0 bg-pattern opacity-10"></div>
-                <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 blur-3xl transform rotate-12 translate-x-1/2"></div>
-                <div className="relative z-10">
-                    <h1 className="text-5xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
-                        Job Applications
-                    </h1>
-                    <p className="text-blue-100 text-lg">Track and manage your career opportunities</p>
-                </div>
-            </div>
 
             <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-8 relative border border-gray-100">
                 <div className="flex flex-col md:flex-row gap-6 justify-between">
@@ -87,8 +156,8 @@ function JobList() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {jobs.map(job => (
-                                <tr key={job.id} className="hover:bg-gray-50/50 transition-all duration-200">
+                            {filteredJobs.map(job => (
+                                <tr key={job._id} className="hover:bg-gray-50/50 transition-all duration-200">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center">
                                             <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center font-semibold text-blue-600 text-xl border border-blue-200 mr-4">
@@ -108,15 +177,15 @@ function JobList() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-4 py-1.5 rounded-xl text-sm font-medium inline-flex items-center ${job.status === 'Interview' ? 'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-200' :
-                                                job.status === 'Offer' ? 'bg-green-100 text-green-700 ring-1 ring-green-200' :
-                                                    job.status === 'Rejected' ? 'bg-red-100 text-red-700 ring-1 ring-red-200' :
-                                                        'bg-blue-100 text-blue-700 ring-1 ring-blue-200'
+                                            job.status === 'Offer' ? 'bg-green-100 text-green-700 ring-1 ring-green-200' :
+                                                job.status === 'Rejected' ? 'bg-red-100 text-red-700 ring-1 ring-red-200' :
+                                                    'bg-blue-100 text-blue-700 ring-1 ring-blue-200'
                                             }`}>
                                             {job.status}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-gray-600">
-                                        {new Date(job.appliedDate).toLocaleDateString('en-US', {
+                                        {new Date(job.createdAt).toLocaleDateString('en-US', {
                                             month: 'short',
                                             day: 'numeric',
                                             year: 'numeric'
@@ -124,10 +193,25 @@ function JobList() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex space-x-2">
-                                            <button className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 hover:shadow-sm">
+                                            <button
+                                                onClick={() => handleEdit(job)}
+                                                className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 hover:shadow-sm"
+                                            >
                                                 <FiEdit2 className="w-5 h-5" />
                                             </button>
-                                            <button className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 hover:shadow-sm">
+                                            <EditJobModal
+                                                job={selectedJob}
+                                                isOpen={isEditModalOpen}
+                                                onClose={() => {
+                                                    setIsEditModalOpen(false);
+                                                    setSelectedJob(null);
+                                                }}
+                                                onUpdate={handleUpdate}
+                                            />
+                                            <button
+                                                onClick={() => handleDelete(job._id)}
+                                                className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 hover:shadow-sm"
+                                            >
                                                 <FiTrash2 className="w-5 h-5" />
                                             </button>
                                         </div>

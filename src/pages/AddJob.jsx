@@ -1,20 +1,36 @@
 import React, { useState } from 'react';
 import { FiBriefcase, FiUser, FiCalendar, FiLink, FiCheckCircle } from 'react-icons/fi';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function AddJob() {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
         company: '',
         role: '',
         status: 'Applied',
-        appliedDate: '',
         link: ''
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // I will add the submission logic later
+        setLoading(true);
+        setError(null);
+
+        try {
+            await axios.post('http://localhost:5000/jobs', formData);
+            navigate('/jobs');
+        } catch (err) {
+            setError('Failed to add job. Please try again.');
+            console.error('Error adding job:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
+    // Update the submit button in your form
     return (
         <div className="space-y-8">
             <div className="max-w-3xl mx-auto bg-gradient-to-r from-indigo-600 via-blue-700 to-purple-700 rounded-[2rem] p-12 text-white relative overflow-hidden backdrop-blur-3xl">
@@ -93,25 +109,6 @@ function AddJob() {
                                 </select>
                             </div>
                         </div>
-
-                        <div className="space-y-2">
-                            <label className="block text-gray-700 font-medium" htmlFor="appliedDate">
-                                Application Date
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <FiCalendar className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input
-                                    type="date"
-                                    id="appliedDate"
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                                    value={formData.appliedDate}
-                                    onChange={(e) => setFormData({ ...formData, appliedDate: e.target.value })}
-                                    required
-                                />
-                            </div>
-                        </div>
                     </div>
 
                     <div className="space-y-2">
@@ -135,10 +132,13 @@ function AddJob() {
 
                     <button
                         type="submit"
-                        className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 text-white py-4 px-6 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 font-medium mt-8 relative overflow-hidden group"
+                        disabled={loading}
+                        className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 text-white py-4 px-6 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 font-medium mt-8 relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
-                        <span className="relative">Add Application</span>
+                        <span className="relative">
+                            {loading ? 'Adding...' : 'Add Application'}
+                        </span>
                     </button>
                 </form>
             </div>

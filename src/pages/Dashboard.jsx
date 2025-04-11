@@ -1,22 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiBriefcase, FiUserPlus, FiList, FiAward, FiX, FiPlusCircle, FiDatabase, FiTrendingUp, FiCalendar, FiArrowUpRight } from 'react-icons/fi';
 import { MdMoodBad } from "react-icons/md";
+import axios from 'axios';
 function Dashboard() {
-    const stats = {
-        total: 10,
-        applied: 5,
-        interview: 3,
-        offer: 1,
-        rejected: 1
+    const [stats, setStats] = useState({
+        total: 0,
+        applied: 0,
+        interview: 0,
+        offer: 0,
+        rejected: 0
+    });
+    const [recentApplications, setRecentApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchJobs();
+    }, []);
+
+    const apiUrl = import.meta.env.VITE_API_URL;
+
+    const fetchJobs = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(`${apiUrl}/jobs`);
+            const jobs = response.data;
+
+            // Calculate status frequencies
+            const statusCount = jobs.reduce((acc, job) => {
+                acc[job.status] = (acc[job.status] || 0) + 1;
+                return acc;
+            }, {});
+
+            // Calculate success rate (Offers / Total Applications) * 100
+            const successRate = jobs.length > 0 
+                ? Math.round((statusCount['Offer'] || 0) / jobs.length * 100)
+                : 0;
+
+            // Update stats
+            setStats({
+                total: jobs.length,
+                applied: statusCount['Applied'] || 0,
+                interview: statusCount['Interview'] || 0,
+                offer: statusCount['Offer'] || 0,
+                rejected: statusCount['Rejected'] || 0,
+                successRate: successRate
+            });
+
+            // Get recent applications (last 3)
+            const sortedJobs = jobs.sort((a, b) =>
+                new Date(b.appliedDate) - new Date(a.appliedDate)
+            );
+            setRecentApplications(sortedJobs.slice(0, 3).map(job => ({
+                company: job.company,
+                role: job.role,
+                date: job.appliedDate,
+                status: job.status
+            })));
+
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching jobs:', err);
+            setError('Failed to fetch dashboard data');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const recentApplications = [
-        { company: 'Microsoft', role: 'Frontend Developer', date: '2024-01-20', status: 'Interview' },
-        { company: 'Amazon', role: 'Software Engineer', date: '2024-01-18', status: 'Applied' },
-        { company: 'Meta', role: 'React Developer', date: '2024-01-15', status: 'Offer' },
-    ];
+    // Add loading and error states to the UI
+    if (loading) {
+        return <div className="text-center py-8">Loading dashboard data...</div>;
+    }
 
+    if (error) {
+        return <div className="text-red-600 text-center py-8">{error}</div>;
+    }
+
+    // Update the success rate display in the header section
     return (
         <div className="space-y-8 p-6">
             <div className="bg-gradient-to-r from-indigo-600 via-blue-700 to-purple-700 rounded-[2rem] p-12 text-white relative overflow-hidden backdrop-blur-3xl">
@@ -37,7 +98,7 @@ function Dashboard() {
                     <div className="flex items-center space-x-6 mt-8">
                         <div className="inline-flex items-center px-6 py-3 bg-white/10 rounded-2xl backdrop-blur-xl border border-white/20">
                             <FiTrendingUp className="mr-3 h-5 w-5" />
-                            <span className="text-lg">Success rate: 40%</span>
+                            <span className="text-lg">Success rate: {stats.successRate}%</span>
                         </div>
                     </div>
                 </div>
