@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiBriefcase, FiUserPlus, FiList, FiAward, FiX, FiPlusCircle, FiDatabase, FiTrendingUp, FiCalendar, FiArrowUpRight } from 'react-icons/fi';
 import { MdMoodBad } from "react-icons/md";
 import axios from 'axios';
+
 function Dashboard() {
     const [stats, setStats] = useState({
         total: 0,
@@ -21,6 +22,8 @@ function Dashboard() {
 
     const apiUrl = import.meta.env.VITE_API_URL;
 
+
+    // Function to fetch jobs
     const fetchJobs = async () => {
         try {
             setLoading(true);
@@ -34,7 +37,7 @@ function Dashboard() {
             }, {});
 
             // Calculate success rate (Offers / Total Applications) * 100
-            const successRate = jobs.length > 0 
+            const successRate = jobs.length > 0
                 ? Math.round((statusCount['Offer'] || 0) / jobs.length * 100)
                 : 0;
 
@@ -70,16 +73,22 @@ function Dashboard() {
 
     // Add loading and error states to the UI
     if (loading) {
-        return <div className="text-center py-8">Loading dashboard data...</div>;
+        return (
+            <div className="h-96 flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                <span className="ml-3">Loading dashboard data...</span>
+            </div>
+        );
     }
 
     if (error) {
         return <div className="text-red-600 text-center py-8">{error}</div>;
     }
 
-    // Update the success rate display in the header section
     return (
         <div className="space-y-8 p-6">
+
+            {/* Simple Header */}
             <div className="bg-gradient-to-r from-indigo-600 via-blue-700 to-purple-700 rounded-[2rem] p-12 text-white relative overflow-hidden backdrop-blur-3xl">
                 <div className="absolute inset-0 bg-pattern opacity-10"></div>
                 <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 blur-3xl transform rotate-12 translate-x-1/2"></div>
@@ -104,6 +113,8 @@ function Dashboard() {
                 </div>
             </div>
 
+
+            {/* Applications Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                     { title: 'Total Applications', icon: FiBriefcase, count: stats.total, color: 'blue', desc: 'Applications submitted', trend: '+15%' },
@@ -154,6 +165,7 @@ function Dashboard() {
                 ))}
             </div>
 
+            {/* Recent Applications */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-2 bg-white rounded-[1.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                     <div className="flex items-center justify-between mb-8">
@@ -200,6 +212,7 @@ function Dashboard() {
                     </div>
                 </div>
 
+                {/* Add new applications and view all applications */}
                 <div className="space-y-6">
                     <Link to="/add-job"
                         className="block bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white p-8 rounded-[1.5rem] shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative overflow-hidden">

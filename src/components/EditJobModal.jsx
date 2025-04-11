@@ -20,6 +20,7 @@ function EditJobModal({ job, isOpen, onClose, onUpdate }) {
         }
     }, [job]);
 
+    // Update job functionality
     const handleSubmit = async (e) => {
         e.preventDefault();
         await onUpdate(formData);

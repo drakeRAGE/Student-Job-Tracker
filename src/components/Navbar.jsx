@@ -10,6 +10,7 @@ function Navbar() {
         return location.pathname === path;
     };
 
+    // List of navigation links
     const navLinks = [
         { path: '/', name: 'Dashboard', icon: FiHome },
         { path: '/add-job', name: 'Add Job', icon: FiPlusCircle },

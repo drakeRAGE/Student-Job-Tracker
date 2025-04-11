@@ -13,7 +13,7 @@ function JobList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const apiUrl = 'http://localhost:5000';
+    const apiUrl = import.meta.env.VITE_API_URL;
 
     // Fetch jobs from API
     useEffect(() => {
@@ -74,6 +74,7 @@ function JobList() {
         }
     };
 
+    // Filter and sort jobs logic - DATA STRUCTURES PROBLEM
     const filteredJobs = jobs
         .filter(job => {
             if (filter === 'all') return true;
@@ -97,7 +98,20 @@ function JobList() {
             }
         });
 
-    // Update the button click handlers in the table
+    // Add loading and error states to the UI
+    if (loading) {
+        return (
+            <div className="h-96 flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                <span className="ml-3">Getting data...</span>
+            </div>
+        );
+    }
+
+    if (error) {
+        return <div className="text-red-600 text-center py-8">{error}</div>;
+    }
+
     return (
         <div className="space-y-8">
 

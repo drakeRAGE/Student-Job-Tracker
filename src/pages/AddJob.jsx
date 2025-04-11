@@ -14,13 +14,17 @@ function AddJob() {
         link: ''
     });
 
+    const apiUrl = import.meta.env.VITE_API_URL;
+
+
+    // Add job functionality
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
         try {
-            await axios.post('http://localhost:5000/jobs', formData);
+            await axios.post(`${apiUrl}/jobs`, formData);
             navigate('/jobs');
         } catch (err) {
             setError('Failed to add job. Please try again.');
@@ -30,9 +34,10 @@ function AddJob() {
         }
     };
 
-    // Update the submit button in your form
     return (
         <div className="space-y-8">
+
+            {/* Header */}
             <div className="max-w-3xl mx-auto bg-gradient-to-r from-indigo-600 via-blue-700 to-purple-700 rounded-[2rem] p-12 text-white relative overflow-hidden backdrop-blur-3xl">
                 <div className="absolute inset-0 bg-pattern opacity-10"></div>
                 <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 blur-3xl transform rotate-12 translate-x-1/2"></div>
@@ -44,6 +49,7 @@ function AddJob() {
                 </div>
             </div>
 
+            {/* Job Form */}
             <div className="max-w-3xl mx-auto relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-purple-100 rounded-[2rem] transform rotate-1 blur-xl opacity-30"></div>
                 <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-8 relative border border-gray-100">
