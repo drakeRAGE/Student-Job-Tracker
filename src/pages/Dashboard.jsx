@@ -53,12 +53,12 @@ function Dashboard() {
 
             // Get recent applications (last 3)
             const sortedJobs = jobs.sort((a, b) =>
-                new Date(b.appliedDate) - new Date(a.appliedDate)
+                new Date(b.createdAt) - new Date(a.createdAt)
             );
             setRecentApplications(sortedJobs.slice(0, 3).map(job => ({
                 company: job.company,
                 role: job.role,
-                date: job.appliedDate,
+                date: job.createdAt,
                 status: job.status
             })));
 
