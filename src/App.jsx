@@ -1,13 +1,26 @@
-import React from 'react'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Dashboard from './pages/Dashboard';
+import AddJob from './pages/AddJob';
+import JobList from './pages/JobList';
+import './App.css';
 
 function App() {
-
   return (
-    <>
-      <h1 className='h-screen text-5xl font-serif flex items-center justify-center text-blue-500 bg-pink-300'>Hello, I am Drag !!</h1>
-    </>
-  )
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/add-job" element={<AddJob />} />
+            <Route path="/jobs" element={<JobList />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;
